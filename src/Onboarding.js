@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, {useRef} from 'react';
 
 import {
   StatusBar,
@@ -44,53 +44,102 @@ const DATA = [
 ];
 
 const Indicator = ({scrollX}) => {
-    return (
-        <View style={styles.indicator}>
-            {DATA.map((_,i)=>{
-                return (
-                    <View style={
-                        styles.dot
-                    }>
-                    </View>
-                )
-            })}
-        </View>
-    )
-}
+  return (
+    <View style={styles.indicator}>
+      {DATA.map((_, i) => {
+        const scale = scrollX.interpolate({
+          inputRange: [(i - 1) * width, i * width, (i + 1) * width],
+          outputRange: [0.8, 1.5, 0.8],
+          extrapolate: 'clamp',
+        });
+        const opacity = scrollX.interpolate({
+          inputRange: [(i - 1) * width, i * width, (i + 1) * width],
+          outputRange: [0.5, 0.8, 0.5],
+          extrapolate: 'clamp',
+        });
+        return (
+          <Animated.View
+            style={[
+              styles.dot,
+              {
+                opacity,
+                transform: [
+                  {
+                    scale: scale,
+                  },
+                ],
+              },
+            ]}></Animated.View>
+        );
+      })}
+    </View>
+  );
+};
 
-const BackDrop = ({scrollX}) =>{
-    const backgroundColor = scrollX.interpolate({
-        inputRange : bgs.map((_,i) => i *width),
-        outputRange : bgs.map((bg) => bg)
-    })
-    return (
-        <Animated.View style={[StyleSheet.absoluteFillObject,{backgroundColor}]}>
+const BackDrop = ({scrollX}) => {
+  const backgroundColor = scrollX.interpolate({
+    inputRange: bgs.map((_, i) => i * width),
+    outputRange: bgs.map(bg => bg),
+  });
+  return (
+    <Animated.View
+      style={[
+        StyleSheet.absoluteFillObject,
+        {backgroundColor},
+      ]}></Animated.View>
+  );
+};
 
-        </Animated.View>
-    )
-}
+const Square = ({scrollX}) => {
+  const smoothRotate = Animated.modulo(
+    Animated.divide(Animated.modulo(scrollX, width), new Animated.Value(width)),
+    1,
+  );
+  const rotate = smoothRotate.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: ['35deg', '0deg', '35deg'],
+  });
+  const translateX = smoothRotate.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, -height, 0],
+  });
+  return (
+    <Animated.View
+      style={[
+        styles.square,
+        {
+          transform: [
+            {
+              rotate,
+            },
+            {
+              translateX,
+            },
+          ],
+        },
+      ]}></Animated.View>
+  );
+};
 
 const Onboarding = () => {
-
-  const scrollX =  useRef(new Animated.Value(0)).current;
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   return (
     <View style={styles.container}>
       <StatusBar />
-      <BackDrop scrollX ={scrollX}/>
+      <BackDrop scrollX={scrollX} />
+      <Square scrollX={scrollX} />
       <Animated.FlatList
         data={DATA}
         keyExtractor={item => item.key}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle ={{paddingBottom : 100}}
+        contentContainerStyle={{paddingBottom: 100}}
         scrollEventThrottle={16}
         pagingEnabled // lướt dứt khoát khi vuốt
         onScroll={Animated.event(
-            [
-                {nativeEvent : {contentOffset : {x : scrollX}}}
-            ],
-            {useNativeDriver : false}
+          [{nativeEvent: {contentOffset: {x: scrollX}}}],
+          {useNativeDriver: false},
         )}
         renderItem={({item}) => {
           return (
@@ -106,7 +155,7 @@ const Onboarding = () => {
           );
         }}
       />
-      <Indicator scrollX = {scrollX}/>
+      <Indicator scrollX={scrollX} />
     </View>
   );
 };
@@ -118,44 +167,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  onBoarding : {
-    width : width,
-    alignItems : "center",
-    padding : 20
+  onBoarding: {
+    width: width,
+    alignItems: 'center',
+    padding: 20,
   },
   image: {
     width: width / 2,
     height: height / 2,
     resizeMode: 'contain',
   },
-  positionImage:{
-    flex :  0.7,
-    justifyContent : "center",
-    alignItems : "center"
+  positionImage: {
+    flex: 0.7,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  positionTitle :{
-    flex : 0.3,
+  positionTitle: {
+    flex: 0.3,
   },
-  textTitle:{
-    fontSize : 24,
-    fontWeight : '800',
-    marginBottom : 10
+  textTitle: {
+    color: '#ffff',
+    fontSize: 24,
+    fontWeight: '800',
+    marginBottom: 10,
   },
-  textDescription : {
-    fontWeight : '300'
+  textDescription: {
+    color: '#ffff',
+    fontWeight: '300',
   },
-  indicator : {
-    position : 'absolute',
-    bottom : 100,
-    flexDirection : 'row'
+  indicator: {
+    position: 'absolute',
+    bottom: 100,
+    flexDirection: 'row',
   },
-  dot :{
-    height : 10,
+  dot: {
+    height: 10,
     width: 10,
-    borderRadius : 15,
-    backgroundColor : "#3333",
-    margin : 10
-  }
+    borderRadius: 15,
+    backgroundColor: '#ffff',
+    margin: 10,
+  },
+  square: {
+    width: height,
+    height: height,
+    borderRadius: 86,
+    backgroundColor: '#fff',
+    position: 'absolute',
+    top: -height * 0.65,
+    left: -height * 0.3,
+  },
 });
 
 export default Onboarding;
